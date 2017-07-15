@@ -13,7 +13,7 @@ downloadFilesWithoutExtensions = True
 manuallyDownloadIgnoredFiles = False
 viewIgnoredLinks = True
 
-htmlFilePath = ''
+htmlFilePath = 'F:\Dropbox\downloaded_courses\stanford\CS224s - LINGUIST285 - Spoken Language Processing\web.stanford.edu\class\cs224s\syllabus.html'
 htmlFile = open(htmlFilePath, 'r');
 htmlFileDirectory = os.sep.join(htmlFilePath.split(os.sep)[0: -1])
 
@@ -28,7 +28,10 @@ defaultDownloadDirectoryPath = htmlFileDirectory + os.sep + defaultDownloadDirec
 
 failedToDownloadList = []
 
+numberOfDownloadedLinks = 0
+
 def download(link, extension=''):
+    global numberOfDownloadedLinks
     print('downloading: ', link['href'])
     try:
         filePath = wget.download(link['href'], out=defaultDownloadDirectoryPath)
@@ -40,6 +43,7 @@ def download(link, extension=''):
     fileName = filePath.split('/')[-1].split('\\')[-1]
     link['href'] = defaultDownloadDirectoryName + os.sep + fileName
     print('saved file to: ', link['href'])
+    numberOfDownloadedLinks += 1
 
     if extension != '' and not fileName.endswith(extension):
         oldFilePath = htmlFileDirectory + os.sep + defaultDownloadDirectoryName + os.sep + fileName
@@ -53,8 +57,10 @@ def download(link, extension=''):
 if not os.path.exists(defaultDownloadDirectoryPath):
     os.makedirs(defaultDownloadDirectoryPath)
 
-for link in soup.find_all('a'):
-    if link['href'].startswith('http'): # link to external website / resource
+totalLinks = soup.find_all('a')
+
+for link in totalLinks:
+    if link.get('href', '').startswith('http'): # link to external website / resource
         # print(str(link['href']))
         if link['href'].endswith(extensions): # link ends in file extension
             if downloadFilesWithExtensions:
@@ -63,9 +69,9 @@ for link in soup.find_all('a'):
         elif(not link['href'].endswith('/')): # link does not end in file extension and is not a directory path
             try:
                 response = requests.head(link['href'], timeout=2.0, allow_redirects=True)
-            except requests.exceptions.ReadTimeout:
+            except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError) as e:
                 failedToDownloadList.append(link)
-                print("READING HTTP HEADER TIMED OUT\n\n")
+                print("READING HTTP HEADER ERROR OCCURED\n\n")
                 break
             content_type = response.headers['content-type']
             extension = mimetypes.guess_extension(content_type)
@@ -118,7 +124,15 @@ if manuallyDownloadIgnoredFiles:
 for link in failedToDownloadList:
     print ("could not download: ", link['href'])
 
+print("\n\n-----------------------Summary-----------------------")
+
+print(str(len(totalLinks)) + "\tlinks were found in the html file.")
+print(str(len(failedToDownloadList)) + "\tlinks were not downloaded.")
+print(str(len(ignoredLinks)) + "\tlinks were ignored.")
+print(str(numberOfDownloadedLinks) + "\tlinks were downloaded")
+
 if modifySourceFile:
+    print("modifying source html file")
     htmlFile = open(htmlFilePath + '.new', 'w');
     htmlFile.write(soup.prettify())
     htmlFile.close()
