@@ -13,7 +13,7 @@ downloadFilesWithoutExtensions = True
 manuallyDownloadIgnoredFiles = False
 viewIgnoredLinks = True
 
-htmlFilePath = 'F:\Dropbox\downloaded_courses\stanford\CS224s - LINGUIST285 - Spoken Language Processing\web.stanford.edu\class\cs224s\syllabus.html'
+htmlFilePath = ''
 htmlFile = open(htmlFilePath, 'r');
 htmlFileDirectory = os.sep.join(htmlFilePath.split(os.sep)[0: -1])
 
@@ -133,7 +133,8 @@ print(str(numberOfDownloadedLinks) + "\tlinks were downloaded")
 
 if modifySourceFile:
     print("modifying source html file")
-    htmlFile = open(htmlFilePath + '.new', 'w');
+    os.rename(htmlFilePath, htmlFilePath + '.backup')
+    htmlFile = open(htmlFilePath, 'w');
     htmlFile.write(soup.prettify())
     htmlFile.close()
 
