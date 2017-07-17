@@ -21,7 +21,7 @@ ignoredLinks = []
 
 soup = BeautifulSoup(htmlFile, 'lxml')
 htmlFile.close()
-extensions = ('.pdf', '.ppt', '.zip', '.pptx')
+extensions = ('.pdf', '.ppt', '.zip', '.pptx', '.dat', '.mp4', '.mp3')
 
 defaultDownloadDirectoryName = "external resources"
 defaultDownloadDirectoryPath = htmlFileDirectory + os.sep + defaultDownloadDirectoryName + os.sep
